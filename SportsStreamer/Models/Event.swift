@@ -28,8 +28,30 @@ struct Event: Identifiable, Hashable {
     func matches(_ query: String) -> Bool {
         let q = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !q.isEmpty else { return true }
-        let haystack = ([title, subtitle ?? "", sport ?? ""] + teams).joined(separator: " ")
+        let text = ([title, subtitle ?? "", sport ?? ""] + teams).joined(separator: " ")
+        let haystack = text + " " + Self.sportAliases(for: text)
         // Every word of the query must appear somewhere ("real bet" -> Real Betis).
         return q.split(separator: " ").allSatisfy { haystack.localizedStandardContains($0) }
+    }
+
+    /// Sites label categories tersely ("SOCCER", "NBA", "F1"); let people search by the sport's everyday names too.
+    private static let aliases: [(keys: [String], terms: String)] = [
+        (["soccer", "football"], "soccer football"),
+        (["nba", "wnba", "basketball"], "basketball"),
+        (["nfl", "ncaaf"], "american football"),
+        (["nhl", "hockey"], "hockey ice hockey"),
+        (["ufc", "mma"], "mma fighting"),
+        (["boxing"], "fight fighting"),
+        (["mlb", "baseball"], "baseball"),
+        (["f1", "formula 1", "motogp", "grand prix", "nascar", "indycar"], "motorsport racing formula"),
+    ]
+
+    private static func sportAliases(for text: String) -> String {
+        let words = Set(text.lowercased().split { !$0.isLetter && !$0.isNumber }.map(String.init))
+        let lower = text.lowercased()
+        return aliases
+            .filter { $0.keys.contains { $0.contains(" ") ? lower.contains($0) : words.contains($0) } }
+            .map(\.terms)
+            .joined(separator: " ")
     }
 }

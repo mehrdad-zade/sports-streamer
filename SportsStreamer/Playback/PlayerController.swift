@@ -7,6 +7,8 @@ import Observation
 final class PlayerController {
     let player = AVPlayer()
     private(set) var isBuffering = false
+    /// Set by `NativePlayerView` while the player is presented full screen over the app.
+    var isPresentingFullScreen = false
 
     @ObservationIgnored var onFailure: (() -> Void)?
     @ObservationIgnored private var observations: [NSKeyValueObservation] = []

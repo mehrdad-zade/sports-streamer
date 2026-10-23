@@ -20,7 +20,11 @@ struct WatchView: View {
             self.session = session
             session.start()
         }
-        .onDisappear { session?.stop() }
+        .onDisappear {
+            // Going full screen covers this view; that's not the user leaving.
+            guard session?.player.isPresentingFullScreen != true else { return }
+            session?.stop()
+        }
     }
 }
 
@@ -43,18 +47,8 @@ private struct WatchContent: View {
             if !isLandscape { sourceList }
         }
         .ignoresSafeArea(edges: isLandscape ? .all : [])
-        .toolbar(isLandscape ? .hidden : .visible, for: .navigationBar)
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button { session.switchToNextAlive() } label: { Image(systemName: "forward.end.fill") }
-                    .disabled(session.nextAlive(after: session.currentID) == nil)
-                    .accessibilityLabel("Next live source")
-            }
-            ToolbarItem(placement: .topBarTrailing) {
-                Button { session.monitor.recheckNow() } label: { Image(systemName: "arrow.clockwise") }
-                    .accessibilityLabel("Re-check sources")
-            }
-        }
+        // No bar above the video; the bottom bar's Home button leads back to the event list.
+        .toolbar(.hidden, for: .navigationBar)
     }
 
     @ViewBuilder
@@ -62,7 +56,7 @@ private struct WatchContent: View {
         if session.mode == .web, let source = session.currentSource {
             WebPlayerView(url: source.pageURL, referer: session.event.url)
         } else if session.currentSource?.isAlive == true {
-            NativePlayerView(player: session.player.player)
+            NativePlayerView(controller: session.player, wantsFullScreen: isLandscape)
                 .overlay { if session.player.isBuffering { ProgressView().tint(.white).controlSize(.large) } }
         } else {
             VStack(spacing: 12) {

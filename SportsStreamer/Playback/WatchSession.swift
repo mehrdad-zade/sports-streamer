@@ -67,11 +67,6 @@ final class WatchSession {
         mode = .web
     }
 
-    func switchToNextAlive() {
-        guard let next = nextAlive(after: currentID) else { return }
-        select(next)
-    }
-
     func nextAlive(after id: Int?) -> StreamSource? {
         let alive = aliveSources.filter { $0.id != id }
         guard let id else { return alive.first }

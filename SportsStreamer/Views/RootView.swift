@@ -17,6 +17,7 @@ struct RootView: View {
                 .navigationTitle("Live Sports")
                 .navigationDestination(for: Event.self) { WatchView(event: $0) }
         }
+        .scrollDismissesKeyboard(.immediately)
         .safeAreaInset(edge: .bottom, spacing: 0) {
             if !isWatchingInLandscape { bottomBar }
         }
@@ -54,13 +55,10 @@ struct RootView: View {
         }
         .padding(.horizontal)
         .padding(.top, 8)
-        // Sit just above the home indicator instead of on top of the full bottom safe area.
-        .padding(.bottom, searchFocused || homeIndicatorInset == 0 ? 8 : 16 - homeIndicatorInset)
+        // Never negative: the bar must reserve its full height, or the keyboard covers part of it.
+        // Without the keyboard the home-indicator safe area already provides the bottom spacing.
+        .padding(.bottom, searchFocused ? 8 : 0)
         .background(.bar)
-    }
-
-    private var homeIndicatorInset: CGFloat {
-        UIApplication.shared.connectedScenes.compactMap { ($0 as? UIWindowScene)?.keyWindow }.first?.safeAreaInsets.bottom ?? 0
     }
 
     private func goHome() {

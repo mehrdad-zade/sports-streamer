@@ -49,6 +49,7 @@ struct SettingsView: View {
                     Button("Reset to default site") { draftURL = AppSettings.defaultSiteURL }
                 }
             }
+            .scrollDismissesKeyboard(.immediately)
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
